@@ -12,6 +12,7 @@
     pkgs.go
     pkgs.yazi
     pkgs.croc
+    pkgs.btop
     pkgs.tldr
     pkgs.fd
     pkgs.bat
@@ -22,9 +23,20 @@
     nvf = { # Enabling nix vim framework
       enable = true;
       settings = { # nvf plugins and formatters
-      # TODO: Add conform.nvim !
         vim = {
-        # NOTE: Setting up the language servers
+          globals = { # Configs that will be defined everywhere
+          	# NOTE: Global keymaps
+           	mapleader = " "; # Setting my leader keys
+          };
+          # For intelisense
+          autocomplete.blink-cmp = {
+            enable = true;
+            setupOpts = {
+              cmdline.keymap.preset = "default";
+              fuzzy.implementation = "prefer_rust";
+            };
+          };
+          # NOTE: Setting up the language servers
           languages = {
             nix = { # Enabling everything to do with nix
               lsp.enable = true;
@@ -43,77 +55,106 @@
             };
           };
           # Adding inline diagnostics
-          diagnostics.nvim-lint = {
+          diagnostics = {
             enable = true;
-            linters_by_ft = {
-              python = [
-                "ruff"
-              ];
+            config = {
+              virtual_text = true; # Setting virtual text on
             };
-          };
-        };
-        vim.lazy.plugins = { # Setting up neovim plugins
-          "aerial.nvim" = {
-            package = pkgs.vimPlugins.aerial-nvim;
-            setupModule = "aerial";
-            setupOpts = {
-              backends = [ "treesitter" "lsp" ];
-            };
-            keys = [
-              { # Setting up floating window toggling for aerial
-                key = "<leader>j";
-                mode = "n";
-                desc = "Aerial toggle";
-                silent = true;
-                action = "<cmd>AerialToggle!<CR>";
-              }
-            ];
-          };
-          "telescope.nvim" = {
-            package = pkgs.vimPlugins.telescope-nvim;
-            setupModule = "telescope";
-            keys = [
-              { # Telescope fuzzy finding files
-                key = "<leader>ff";
-                mode = "n";
-                silent = true;
-                desc = "Fuzzy Search files";
-                action = "<cmd>Telescope find_files<CR>";
-              }
-            ];
-          };
-          "flash.nvim" = {
-            package = pkgs.vimPlugins.flash-nvim;
-            setupModule = "flash";
-            keys = [
-              { # Flash invoking jump
-                key = "zz";
-                mode = [ "n" "x" ];
-                desc = "Invoking basic jump";
-                lua = true;
-                action = "require('flash').jump";
-              }
-            ];
-          };
-          "nvim-autopairs" = {
-            package = pkgs.vimPlugins.nvim-autopairs;
-            setupModule = "autopairs";
-            setupOpts = {
-              check_ts = true;
-              ts_config = {
-                lua = [ "string" ];
-                javascript = [ "template_string" ];
-                java = false;
+            nvim-lint = { #
+              enable = true;
+              linters_by_ft = {
+                lua = [
+                  "stylua"
+                ];
+                nix = [
+                  "statix"
+                ];
+                python = [
+                  "ruff"
+                ];
               };
             };
           };
-          "mini.ai" = { # For mini AI autodetect
-            package = pkgs.vimPlugins.mini-ai;
-            setupModule = "mini.ai";
-          };
-          "mini.surround" = { # For mini surround
-            package = pkgs.vimPlugins.mini-surround;
-            setupModule = "mini.surround";
+          lazy.plugins = { # Setting up neovim plugins
+            "nvim-tree" = { # Explorer pane
+              package = pkgs.vimPlugins.nvim-tree;
+              setupModule = "tree";
+              setupOpts = {
+                git.enable = true;
+                renderer.icons.show.git = true;
+              };
+              keys = [
+                { # Toggle nvim-tree explorer
+                  key = "<leader>ee";
+                  mode = "n";
+                  desc = "Toggle explorer";
+                  silent = true;
+                  action = "<cmd>NvimTreeToggle<CR>";
+                }
+              ];
+            };
+            "aerial.nvim" = {
+              package = pkgs.vimPlugins.aerial-nvim;
+              setupModule = "aerial";
+              setupOpts = {
+                backends = [ "treesitter" "lsp" ];
+              };
+              keys = [
+                { # Setting up floating window toggling for aerial
+                  key = "<leader>j";
+                  mode = "n";
+                  desc = "Aerial toggle";
+                  silent = true;
+                  action = "<cmd>AerialToggle!<CR>";
+                }
+              ];
+            };
+            "telescope.nvim" = {
+              package = pkgs.vimPlugins.telescope-nvim;
+              setupModule = "telescope";
+              keys = [
+                { # Telescope fuzzy finding files
+                  key = "<leader>ff";
+                  mode = "n";
+                  silent = true;
+                  desc = "Fuzzy Search files";
+                  action = "<cmd>Telescope find_files<CR>";
+                }
+              ];
+            };
+            # "flash.nvim" = {
+            #   package = pkgs.vimPlugins.flash-nvim;
+            #   setupModule = "flash";
+            #   keys = [
+            #     # { # Flash invoking jump
+            #     #   key = "zz";
+            #     #   mode = [ "n" "x" ];
+            #     #   desc = "Invoking basic jump";
+            #     #   lua = true;
+            #     #   # action = "require('flash').jump({})";
+            #     # }
+            #   ];
+            # };
+            "nvim-autopairs" = {
+              package = pkgs.vimPlugins.nvim-autopairs;
+              setupModule = "autopairs";
+              setupOpts = {
+                check_ts = true;
+                ts_config = {
+                  lua = [ "string" ];
+                  javascript = [ "template_string" ];
+                  java = false;
+                };
+              };
+            };
+            "mini.ai" = { # For mini AI autodetect
+              package = pkgs.vimPlugins.mini-ai;
+              setupModule = "mini.ai";
+            };
+            "mini.surround" = { # For mini surround
+              package = pkgs.vimPlugins.mini-surround;
+              setupModule = "mini.surround";
+            };
           };
         };
       };
