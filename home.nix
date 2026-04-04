@@ -20,6 +20,9 @@
   ];
 
   programs = {
+  	atool = { # An archive manager, trying out new things
+  		enable = true;
+  	};
     nvf = { # Enabling nix vim framework
       enable = true;
       settings = { # nvf plugins and formatters
@@ -76,8 +79,8 @@
             };
           };
           lazy.plugins = { # Setting up neovim plugins
-            "nvim-tree" = { # Explorer pane
-              package = pkgs.vimPlugins.nvim-tree;
+            "nvim-tree.lua" = { # Explorer pane
+              package = pkgs.vimPlugins.nvim-tree-lua;
               setupModule = "tree";
               setupOpts = {
                 git.enable = true;
@@ -137,7 +140,7 @@
             # };
             "nvim-autopairs" = {
               package = pkgs.vimPlugins.nvim-autopairs;
-              setupModule = "autopairs";
+              setupModule = "nvim-autopairs";
               setupOpts = {
                 check_ts = true;
                 ts_config = {
@@ -160,6 +163,11 @@
       };
     };
 
+    atuin = { # For shell Ctrl-R usability
+   		enable = true;
+    	# host = "https://atuin.com";
+    	# openFirewall = true;
+   	};
     neovim = {
       enable = true;
       defaultEditor = true;
@@ -201,7 +209,7 @@
 
     television = {
       enable = true;
-      enableZshIntegration = true;
+      # enableZshIntegration = true;
     };
 
     zoxide = {
