@@ -24,29 +24,70 @@
   		enable = true;
   	};
     nvf = { # Enabling nix vim framework
-    # TODO: Add a theme for neovim for transparency
+
       enable = true;
       settings = { # nvf plugins and formatters
         vim = {
+
+          # NOTE: Setting core vim opperations
           globals = { # Configs that will be defined everywhere
-          	# NOTE: Global keymaps
+          	# Global keymaps
            	mapleader = " "; # Setting my leader keys
           };
-          # For intelisense
-          autocomplete.blink-cmp = {
+          keymaps = [ # Unfinished setting global keymaps
+                { # Removes highlights
+                        keys = "<leader>nh";
+                        action = "<cmd>noh<CR>";
+                        mode = "n"
+                };
+          ];
+
+
+          # NOTE: Essential additions
+          autocomplete.blink-cmp = { # For intelisense
             enable = true;
             setupOpts = {
               cmdline.keymap.preset = "default";
               fuzzy.implementation = "prefer_rust";
             };
           };
-          # NOTE: Setting up the language servers
+          # Setting up the language servers
           languages = {
-            nix = { # Enabling everything to do with nix
-              lsp.enable = true;
+            lua = { # Enabling everything to do with nix
+              lsp = { # Lua langauge support
+                enable = true;
+                servers = ["lua-language-server"];
+              };
+              treesitter.enable = true;
+              extraDiganostics.enable = true;
+              format = {
+                enable = true; # Enables nix formatting
+                type = "stylua"; # Uses the format tool type of such
+              };
+            };
+            nix = { # Nix langauge support
+              lsp = { # Lua langauge support
+                enable = true;
+                servers = ["nixd"];
+              };
+              treesitter.enable = true;
+              extraDiganostics.enable = true;
+              format = {
+                enable = true; # Enables nix formatting
+                type = "nixfmt"; # Uses the format tool type of such
+              };
             };
             python = { # Enabling the python lsp
-              lsp.enable = true;
+              lsp = {
+                enable = true;
+                servers = [ "ruff" ];
+              };
+              treesitter.enable = true;
+              extraDiganostics.enable = true;
+              format = {
+                enable = true; # Enables nix formatting
+                type = "ruff"; # Uses the format tool type of such
+              };
             };
           };
           # Adding formatters to the mix
@@ -81,7 +122,7 @@
             };
           };
           lazy.plugins = { # Setting up neovim plugins
-            "plenary.nvim" = {
+            "plenary.nvim" = { # Specifically for telescope or other plugins
               package = pkgs.vimPlugins.plenary-nvim;
             };
             "nvim-tree.lua" = { # Explorer pane
@@ -156,15 +197,44 @@
                 };
               };
             };
-            "mini.ai" = { # For mini AI autodetect
-              package = pkgs.vimPlugins.mini-ai;
-              setupModule = "mini.ai";
+            # NOTE: Non-essential addtions
+            "gitsigns.nvim" = { # For mini surround
+              package = pkgs.vimPlugins.gitsigns-nvim;
+              setupModule = "gitsigns";
+              setupOpts = {
+                # TODO: Put the setupOpts in here
+              }
             };
-            "mini.surround" = { # For mini surround
-              package = pkgs.vimPlugins.mini-surround;
-              setupModule = "mini.surround";
-            };
+
+            terminal.toggleterm.lazygit = { # Enables lazygit for neovim
+                enable = true;
+                mappings.open = "<leader>lg" # Sets the keymap for lazygit
+            }
           };
+        # NOTE: Descretionary additions
+        # luaConfigRC.aquarium = "vim.cmd('colorscheme aquiarum')" # Setting the colorscheme
+                mini = { # Modern activation of mini services
+                        statusline = {
+                                enable = true; # For the bottom area of neovim
+                        };
+                        surround.enable = true; # For surround additions
+                        ai.enable = true; # For AI surround areas
+                        tabline.enable = true; # For the top level tabs for neovim
+                        starter = true; # Neovim greeter
+                        splitjoin = { # For arranging json easier
+                                enable = true;
+                                setupOpts = {
+                                        mappings = {
+                                                toggle = "gS";
+                                                split = "";
+                                                join = "";
+                                        };
+                                        detect = {
+                                                separator =",";
+                                        };
+                                };
+                        };
+                };
         };
       };
     };
