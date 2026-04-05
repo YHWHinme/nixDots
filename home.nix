@@ -24,6 +24,7 @@
   		enable = true;
   	};
     nvf = { # Enabling nix vim framework
+    # TODO: Add a theme for neovim for transparency
       enable = true;
       settings = { # nvf plugins and formatters
         vim = {
@@ -50,6 +51,7 @@
           };
           # Adding formatters to the mix
           formatter.conform-nvim = {
+          # TODO: Put keys in here for formatting on demand
             enable = true;
             setupOpts.formatters_by_ft = {
               python = [ # Adding the ruff formatter for python
@@ -58,7 +60,7 @@
             };
           };
           # Adding inline diagnostics
-          diagnostics = {
+          diagnostics = { # BUG: Doesn't seem to be working right now
             enable = true;
             config = {
               virtual_text = true; # Setting virtual text on
@@ -79,11 +81,15 @@
             };
           };
           lazy.plugins = { # Setting up neovim plugins
+            "plenary.nvim" = {
+              package = pkgs.vimPlugins.plenary-nvim;
+            };
             "nvim-tree.lua" = { # Explorer pane
               package = pkgs.vimPlugins.nvim-tree-lua;
-              setupModule = "tree";
+              setupModule = "nvim-tree";
               setupOpts = {
                 git.enable = true;
+                side = "right"; # New!!
                 renderer.icons.show.git = true;
               };
               keys = [
@@ -134,7 +140,7 @@
             #     #   mode = [ "n" "x" ];
             #     #   desc = "Invoking basic jump";
             #     #   lua = true;
-            #     #   # action = "require('flash').jump({})";
+            #     #   # action = "require(\'flash\').jump({})";
             #     # }
             #   ];
             # };
@@ -164,10 +170,9 @@
     };
 
     atuin = { # For shell Ctrl-R usability
-   		enable = true;
-    	# host = "https://atuin.com";
-    	# openFirewall = true;
-   	};
+    		enable = true;
+    		flags = [ "--disable-up-arrow" ];
+    	};
     neovim = {
       enable = true;
       defaultEditor = true;

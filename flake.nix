@@ -17,14 +17,14 @@
     let
       configuration = { pkgs, lib, ... }: {
 
-      system =  {
-      	nixos = {
-       		label = "Home-nvim-completion";
-        	tags = [
-          	        "Enablinng lsp diagnostics and autocomplete for neovim"
-          ];
-       };
-      };
+      # system =  {
+      # 	nixos = {
+      #  		label = "Home-nvim-completion";
+      #   	tags = [
+      #     	        "Enablinng lsp diagnostics and autocomplete for neovim"
+      #     ];
+      #  };
+      # };
         imports = [
           ./details/hardware-configuration.nix
         ];
