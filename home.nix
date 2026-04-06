@@ -20,9 +20,9 @@
   ];
 
   programs = {
-  	atool = { # An archive manager, trying out new things
-  		enable = true;
-  	};
+    atool = { # An archive manager, trying out new things
+      enable = true;
+    };
     nvf = { # Enabling nix vim framework
 
       enable = true;
@@ -31,19 +31,47 @@
 
           # NOTE: Setting core vim opperations
           globals = { # Configs that will be defined everywhere
-          	# Global keymaps
-           	mapleader = " "; # Setting my leader keys
+            # Global keymaps
+            mapleader = " "; # Setting my leader keys
           };
-          keymaps = [ # Unfinished setting global keymaps
-                { # Removes highlights
-                        keys = "<leader>nh";
-                        action = "<cmd>noh<CR>";
-                        mode = "n"
-                };
+          options = { # Vim editor options
+            tabstop = 2; # Number of spaces a Tab counts for
+            shiftwidth = 2; # Number of spaces to use for autoindent
+            expandtab = true; # Use spaces when Tab is pressed
+          };
+          keymaps = [ # Setting global keymaps
+            { # Removes highlights
+              key = "<leader>ee";
+              mode = "n";
+              silent = true;
+              action = "<cmd>NvimTreeToggle<CR>";
+              desc = "Toggles Nvim tree";
+            }
+            { # Removes highlights
+              key = "<leader>nh";
+              mode = "n";
+              silent = true;
+              action = "<cmd>noh<CR>";
+              desc = "Remove highlights";
+            }
+            { # Format buffer
+              key = "<leader>mm";
+              mode = "n";
+              silent = true;
+              lua = true;
+              action = "function() require('conform).format({ async = true, lsp_fallback = true}) end";
+              desc = "Format buffer";
+            }
           ];
 
 
           # NOTE: Essential additions
+          diagnostics = { # Adding inline diagnostics
+            enable = true;
+            config = {
+              virtual_text = true; # Setting virtual text on for diagnostics
+            };
+          };
           autocomplete.blink-cmp = { # For intelisense
             enable = true;
             setupOpts = {
@@ -51,6 +79,7 @@
               fuzzy.implementation = "prefer_rust";
             };
           };
+
           # Setting up the language servers
           languages = {
             lua = { # Enabling everything to do with nix
@@ -59,7 +88,7 @@
                 servers = ["lua-language-server"];
               };
               treesitter.enable = true;
-              extraDiganostics.enable = true;
+              extraDiagnostics.enable = true;
               format = {
                 enable = true; # Enables nix formatting
                 type = "stylua"; # Uses the format tool type of such
@@ -71,7 +100,7 @@
                 servers = ["nixd"];
               };
               treesitter.enable = true;
-              extraDiganostics.enable = true;
+              extraDiagnostics.enable = true;
               format = {
                 enable = true; # Enables nix formatting
                 type = "nixfmt"; # Uses the format tool type of such
@@ -83,65 +112,103 @@
                 servers = [ "ruff" ];
               };
               treesitter.enable = true;
-              extraDiganostics.enable = true;
+              extraDiagnostics.enable = true;
               format = {
                 enable = true; # Enables nix formatting
                 type = "ruff"; # Uses the format tool type of such
               };
             };
           };
-          # Adding formatters to the mix
-          formatter.conform-nvim = {
-          # TODO: Put keys in here for formatting on demand
-            enable = true;
-            setupOpts.formatters_by_ft = {
-              python = [ # Adding the ruff formatter for python
-                "ruff_format"
-              ];
-            };
-          };
-          # Adding inline diagnostics
-          diagnostics = { # BUG: Doesn't seem to be working right now
-            enable = true;
-            config = {
-              virtual_text = true; # Setting virtual text on
-            };
-            nvim-lint = { #
-              enable = true;
-              linters_by_ft = {
-                lua = [
-                  "stylua"
-                ];
-                nix = [
-                  "statix"
-                ];
-                python = [
-                  "ruff"
-                ];
-              };
-            };
-          };
+
           lazy.plugins = { # Setting up neovim plugins
-            "plenary.nvim" = { # Specifically for telescope or other plugins
+            # Dependency plugins
+            "plenary.nvim" = { # Dependency for todo-comments and telescope
               package = pkgs.vimPlugins.plenary-nvim;
             };
-            "nvim-tree.lua" = { # Explorer pane
-              package = pkgs.vimPlugins.nvim-tree-lua;
-              setupModule = "nvim-tree";
-              setupOpts = {
-                git.enable = true;
-                side = "right"; # New!!
-                renderer.icons.show.git = true;
-              };
+            "todo-comments.nvim" = { # For todo comments
+              package = pkgs.vimPlugins.todo-comments-nvim;
+              setupModule = "todo-comments"; # Was wrong before
               keys = [
-                { # Toggle nvim-tree explorer
-                  key = "<leader>ee";
+                { # Next todo comment
+                  key = "]t";
                   mode = "n";
-                  desc = "Toggle explorer";
-                  silent = true;
-                  action = "<cmd>NvimTreeToggle<CR>";
+                  desc = "Next todo comment";
+                  lua = true;
+                  action = "function() require('todo-comments').jump_next() end";
+                }
+                { # Previous todo comment
+                  key = "[t";
+                  mode = "n";
+                  desc = "Previous todo comment";
+                  lua = true;
+                  action = "function() require('todo-comments').jump_prev() end";
                 }
               ];
+            };
+            "telescope.nvim" = {
+              package = pkgs.vimPlugins.telescope-nvim;
+              # dependencies = [ "plenary" ];
+              setupModule = "telescope";
+              keys = [
+                { # Telescope fuzzy finding files
+                  key = "<leader>ff";
+                  mode = "n";
+                  silent = true;
+                  desc = "Fuzzy Search files";
+                  action = "<cmd>Telescope find_files<CR>";
+                }
+              ];
+            };
+            "flash.nvim" = {
+              package = pkgs.vimPlugins.flash-nvim;
+              setupModule = "flash";
+              keys = [
+                { # Flash invoking jump
+                  key = "zz";
+                  mode = [ "n" "x" ];
+                  desc = "Invoking basic jump";
+                  lua = true;
+                  action = "function() require('flash').jump({}) end";
+                }
+              ];
+            };
+            "nvim-autopairs" = {
+              package = pkgs.vimPlugins.nvim-autopairs;
+              setupModule = "nvim-autopairs";
+              setupOpts = {
+                check_ts = true;
+                ts_config = {
+                  lua = [ "string" ];
+                  javascript = [ "template_string" ];
+                  java = false;
+                };
+              };
+            };
+            # NOTE: Non-essential addtions
+            "gitsigns.nvim" = { # For gitsigns
+              package = pkgs.vimPlugins.gitsigns-nvim;
+              setupModule = "gitsigns";
+              setupOpts = {
+                signs = {
+                  add = { text = "┃"; };
+                  change = { text = "┃"; };
+                  delete = { text = "_"; };
+                  topdelete = { text = "‾"; };
+                  changedelete = { text = "~"; };
+                  untracked = { text = "┆"; };
+                };
+                signs_staged = {
+                  add = { text = "┃"; };
+                  change = { text = "┃"; };
+                  delete = { text = "_"; };
+                  topdelete = { text = "‾"; };
+                  changedelete = { text = "~"; };
+                  untracked = { text = "┆"; };
+                };
+                signs_staged_enable = true;
+                signcolumn = true;
+                numhl = false;
+              };
             };
             "aerial.nvim" = {
               package = pkgs.vimPlugins.aerial-nvim;
@@ -159,90 +226,60 @@
                 }
               ];
             };
-            "telescope.nvim" = {
-              package = pkgs.vimPlugins.telescope-nvim;
-              setupModule = "telescope";
-              keys = [
-                { # Telescope fuzzy finding files
-                  key = "<leader>ff";
-                  mode = "n";
-                  silent = true;
-                  desc = "Fuzzy Search files";
-                  action = "<cmd>Telescope find_files<CR>";
-                }
-              ];
+
+          };
+
+          # terminal.toggleterm.lazygit = { # Enables lazygit for neovim
+          #   enable = true;
+          #   mappings.open = "<leader>lg"; # Sets the keymap for lazygit
+          # };
+
+          # NOTE: Descretionary additions
+          mini = { # Modern activation of mini services
+            statusline = {
+              enable = true; # For the bottom area of neovim
             };
-            # "flash.nvim" = {
-            #   package = pkgs.vimPlugins.flash-nvim;
-            #   setupModule = "flash";
-            #   keys = [
-            #     # { # Flash invoking jump
-            #     #   key = "zz";
-            #     #   mode = [ "n" "x" ];
-            #     #   desc = "Invoking basic jump";
-            #     #   lua = true;
-            #     #   # action = "require(\'flash\').jump({})";
-            #     # }
-            #   ];
-            # };
-            "nvim-autopairs" = {
-              package = pkgs.vimPlugins.nvim-autopairs;
-              setupModule = "nvim-autopairs";
+            indentscope = { # For indenting
+                enable = true;
+            };
+            surround.enable = true; # For surround additions
+            ai.enable = true; # For AI surround areas
+            tabline.enable = true; # For the top level tabs for neovim
+            starter.enable = true; # Neovim greeter
+            splitjoin = { # For arranging json easier
+              enable = true;
               setupOpts = {
-                check_ts = true;
-                ts_config = {
-                  lua = [ "string" ];
-                  javascript = [ "template_string" ];
-                  java = false;
+                mappings = {
+                  toggle = "gS";
+                  split = "";
+                  join = "";
+                };
+                detect = {
+                  separator = ",";
                 };
               };
             };
-            # NOTE: Non-essential addtions
-            "gitsigns.nvim" = { # For mini surround
-              package = pkgs.vimPlugins.gitsigns-nvim;
-              setupModule = "gitsigns";
-              setupOpts = {
-                # TODO: Put the setupOpts in here
-              }
-            };
-
-            terminal.toggleterm.lazygit = { # Enables lazygit for neovim
-                enable = true;
-                mappings.open = "<leader>lg" # Sets the keymap for lazygit
-            }
           };
-        # NOTE: Descretionary additions
-        # luaConfigRC.aquarium = "vim.cmd('colorscheme aquiarum')" # Setting the colorscheme
-                mini = { # Modern activation of mini services
-                        statusline = {
-                                enable = true; # For the bottom area of neovim
-                        };
-                        surround.enable = true; # For surround additions
-                        ai.enable = true; # For AI surround areas
-                        tabline.enable = true; # For the top level tabs for neovim
-                        starter = true; # Neovim greeter
-                        splitjoin = { # For arranging json easier
-                                enable = true;
-                                setupOpts = {
-                                        mappings = {
-                                                toggle = "gS";
-                                                split = "";
-                                                join = "";
-                                        };
-                                        detect = {
-                                                separator =",";
-                                        };
-                                };
-                        };
-                };
+
+          theme = { # Setting up my neovim theme
+            enable = true;
+            transparent = true;
+          };
+
+          filetree.nvimTree = { # File tree configuration
+            enable = true;
+            setupOpts = {
+              view.side = "right"; # Sends to the right side instead of left
+            };
+          };
         };
       };
     };
 
     atuin = { # For shell Ctrl-R usability
-    		enable = true;
-    		flags = [ "--disable-up-arrow" ];
-    	};
+      enable = true;
+      flags = [ "--disable-up-arrow" ]; # Disables the up arrow in atuin
+    };
     neovim = {
       enable = true;
       defaultEditor = true;
@@ -284,7 +321,6 @@
 
     television = {
       enable = true;
-      # enableZshIntegration = true;
     };
 
     zoxide = {
