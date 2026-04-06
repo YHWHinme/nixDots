@@ -7,72 +7,90 @@
 
   # Adding user packages
   home.packages = [
+    # Normal packages
     pkgs.eza
     pkgs.git
     pkgs.go
     pkgs.yazi
     pkgs.croc
+
     pkgs.btop
     pkgs.tldr
     pkgs.fd
     pkgs.bat
     pkgs.ripgrep
+
+		pkgs.lazygit
   ];
 
   programs = {
-    atool = { # An archive manager, trying out new things
+    atool = {
+      # An archive manager, trying out new things
       enable = true;
     };
-    nvf = { # Enabling nix vim framework
+    nvf = {
+      # Enabling nix vim framework
 
       enable = true;
-      settings = { # nvf plugins and formatters
+      settings = {
+        # nvf plugins and formatters
         vim = {
 
           # NOTE: Setting core vim opperations
-          globals = { # Configs that will be defined everywhere
+          globals = {
+            # Configs that will be defined everywhere
             # Global keymaps
             mapleader = " "; # Setting my leader keys
           };
-          options = { # Vim editor options
+          options = {
+            # Vim editor options
             tabstop = 2; # Number of spaces a Tab counts for
             shiftwidth = 2; # Number of spaces to use for autoindent
-            expandtab = true; # Use spaces when Tab is pressed
+            expandtab = false; # Use spaces when Tab is pressed
           };
-          keymaps = [ # Setting global keymaps
-            { # Removes highlights
+          keymaps = [
+            # Setting global keymaps
+            {
+              # Removes highlights
               key = "<leader>ee";
               mode = "n";
               silent = true;
               action = "<cmd>NvimTreeToggle<CR>";
               desc = "Toggles Nvim tree";
             }
-            { # Removes highlights
+            {
+              # Removes highlights
               key = "<leader>nh";
               mode = "n";
               silent = true;
               action = "<cmd>noh<CR>";
               desc = "Remove highlights";
             }
-            { # Format buffer
+            {
+              # Format buffer
               key = "<leader>mm";
               mode = "n";
               silent = true;
               lua = true;
-              action = "function() require('conform).format({ async = true, lsp_fallback = true}) end";
+              action = "function() require('conform').format({
+							       	async = false,
+							       	timeout_ms = 1000,
+							       	lsp_fallback = true
+							       }) end";
               desc = "Format buffer";
             }
           ];
 
-
           # NOTE: Essential additions
-          diagnostics = { # Adding inline diagnostics
+          diagnostics = {
+            # Adding inline diagnostics
             enable = true;
             config = {
               virtual_text = true; # Setting virtual text on for diagnostics
             };
           };
-          autocomplete.blink-cmp = { # For intelisense
+          autocomplete.blink-cmp = {
+            # For intelisense
             enable = true;
             setupOpts = {
               cmdline.keymap.preset = "default";
@@ -81,62 +99,69 @@
           };
 
           # Setting up the language servers
-          languages = {
-            lua = { # Enabling everything to do with nix
-              lsp = { # Lua langauge support
-                enable = true;
-                servers = ["lua-language-server"];
+          formatter.conform-nvim = {
+            # In depth setup of formatter blcok
+            enable = true; # Apparently I have to enable this for languages formatting to work
+            setupOpts = {
+              format_on_save = {
+                lsp_format = "fallback";
+                timeout_ms = 1000;
               };
-              treesitter.enable = true;
-              extraDiagnostics.enable = true;
-              format = {
-                enable = true; # Enables nix formatting
-                type = "stylua"; # Uses the format tool type of such
-              };
-            };
-            nix = { # Nix langauge support
-              lsp = { # Lua langauge support
-                enable = true;
-                servers = ["nixd"];
-              };
-              treesitter.enable = true;
-              extraDiagnostics.enable = true;
-              format = {
-                enable = true; # Enables nix formatting
-                type = "nixfmt"; # Uses the format tool type of such
-              };
-            };
-            python = { # Enabling the python lsp
-              lsp = {
-                enable = true;
-                servers = [ "ruff" ];
-              };
-              treesitter.enable = true;
-              extraDiagnostics.enable = true;
-              format = {
-                enable = true; # Enables nix formatting
-                type = "ruff"; # Uses the format tool type of such
+              formatters_by_ft = {
+                nix = [ "nixfmt" ];
+                lua = [ "stylua" ];
+                python = [ "ruff" ];
               };
             };
           };
+          languages = {
+            lua = {
+              # Enabling everything to do with nix
+              lsp = {
+                # Lua langauge support
+                enable = true;
+                servers = [ "lua-language-server" ];
+              };
+              treesitter.enable = true;
+              extraDiagnostics.enable = true;
+            };
+            nix = {
+              # Nix langauge support
+              lsp = {
+                # Lua langauge support
+                enable = true;
+                servers = [ "nixd" ];
+              };
+              treesitter.enable = true;
+              extraDiagnostics.enable = true;
+            };
+            python = {
+              enable = true;
+            };
+          };
 
-          lazy.plugins = { # Setting up neovim plugins
+          lazy.plugins = {
+            # Setting up neovim plugins
             # Dependency plugins
-            "plenary.nvim" = { # Dependency for todo-comments and telescope
+            "plenary.nvim" = {
+              # Dependency for todo-comments and telescope
               package = pkgs.vimPlugins.plenary-nvim;
             };
-            "todo-comments.nvim" = { # For todo comments
+            "todo-comments.nvim" = {
+              # For todo comments
               package = pkgs.vimPlugins.todo-comments-nvim;
               setupModule = "todo-comments"; # Was wrong before
               keys = [
-                { # Next todo comment
+                {
+                  # Next todo comment
                   key = "]t";
                   mode = "n";
                   desc = "Next todo comment";
                   lua = true;
                   action = "function() require('todo-comments').jump_next() end";
                 }
-                { # Previous todo comment
+                {
+                  # Previous todo comment
                   key = "[t";
                   mode = "n";
                   desc = "Previous todo comment";
@@ -150,7 +175,8 @@
               # dependencies = [ "plenary" ];
               setupModule = "telescope";
               keys = [
-                { # Telescope fuzzy finding files
+                {
+                  # Telescope fuzzy finding files
                   key = "<leader>ff";
                   mode = "n";
                   silent = true;
@@ -163,9 +189,13 @@
               package = pkgs.vimPlugins.flash-nvim;
               setupModule = "flash";
               keys = [
-                { # Flash invoking jump
+                {
+                  # Flash invoking jump
                   key = "zz";
-                  mode = [ "n" "x" ];
+                  mode = [
+                    "n"
+                    "x"
+                  ];
                   desc = "Invoking basic jump";
                   lua = true;
                   action = "function() require('flash').jump({}) end";
@@ -184,26 +214,65 @@
                 };
               };
             };
+
             # NOTE: Non-essential addtions
-            "gitsigns.nvim" = { # For gitsigns
+						"lazygit.nvim" = { # Adding lazygit package for working inside of neovim
+							package = pkgs.vimPlugins.lazygit-nvim;
+							lazy = true;
+							# setupModule = "lazygit";
+							keys = [
+								{
+									action = "<cmd>LazygGit<CR>";
+									silent = true;
+									key = "<leader>lg";
+									desc = "Open lazygit area";
+								}
+							]
+						}
+            "gitsigns.nvim" = {
+              # For gitsigns
               package = pkgs.vimPlugins.gitsigns-nvim;
               setupModule = "gitsigns";
               setupOpts = {
                 signs = {
-                  add = { text = "┃"; };
-                  change = { text = "┃"; };
-                  delete = { text = "_"; };
-                  topdelete = { text = "‾"; };
-                  changedelete = { text = "~"; };
-                  untracked = { text = "┆"; };
+                  add = {
+                    text = "┃";
+                  };
+                  change = {
+                    text = "┃";
+                  };
+                  delete = {
+                    text = "_";
+                  };
+                  topdelete = {
+                    text = "‾";
+                  };
+                  changedelete = {
+                    text = "~";
+                  };
+                  untracked = {
+                    text = "┆";
+                  };
                 };
                 signs_staged = {
-                  add = { text = "┃"; };
-                  change = { text = "┃"; };
-                  delete = { text = "_"; };
-                  topdelete = { text = "‾"; };
-                  changedelete = { text = "~"; };
-                  untracked = { text = "┆"; };
+                  add = {
+                    text = "┃";
+                  };
+                  change = {
+                    text = "┃";
+                  };
+                  delete = {
+                    text = "_";
+                  };
+                  topdelete = {
+                    text = "‾";
+                  };
+                  changedelete = {
+                    text = "~";
+                  };
+                  untracked = {
+                    text = "┆";
+                  };
                 };
                 signs_staged_enable = true;
                 signcolumn = true;
@@ -214,10 +283,14 @@
               package = pkgs.vimPlugins.aerial-nvim;
               setupModule = "aerial";
               setupOpts = {
-                backends = [ "treesitter" "lsp" ];
+                backends = [
+                  "treesitter"
+                  "lsp"
+                ];
               };
               keys = [
-                { # Setting up floating window toggling for aerial
+                {
+                  # Setting up floating window toggling for aerial
                   key = "<leader>j";
                   mode = "n";
                   desc = "Aerial toggle";
@@ -228,29 +301,25 @@
             };
 
           };
-
-          # terminal.toggleterm.lazygit = { # Enables lazygit for neovim
-          #   enable = true;
-          #   mappings.open = "<leader>lg"; # Sets the keymap for lazygit
-          # };
-
-          # NOTE: Descretionary additions
-          mini = { # Modern activation of mini services
+          mini = {
+            # Modern activation of mini services
             statusline = {
               enable = true; # For the bottom area of neovim
             };
-            indentscope = { # For indenting
-                enable = true;
+            indentscope = {
+              # For indenting
+              enable = true;
             };
             surround.enable = true; # For surround additions
             ai.enable = true; # For AI surround areas
             tabline.enable = true; # For the top level tabs for neovim
             starter.enable = true; # Neovim greeter
-            splitjoin = { # For arranging json easier
+            splitjoin = {
+              # For arranging json easier
               enable = true;
               setupOpts = {
                 mappings = {
-                  toggle = "gS";
+                  toggle = "<leader>r";
                   split = "";
                   join = "";
                 };
@@ -261,12 +330,16 @@
             };
           };
 
-          theme = { # Setting up my neovim theme
+          # NOTE: Descretionary additions
+
+          theme = {
+            # Setting up my neovim theme
             enable = true;
             transparent = true;
           };
 
-          filetree.nvimTree = { # File tree configuration
+          filetree.nvimTree = {
+            # File tree configuration
             enable = true;
             setupOpts = {
               view.side = "right"; # Sends to the right side instead of left
@@ -276,7 +349,8 @@
       };
     };
 
-    atuin = { # For shell Ctrl-R usability
+    atuin = {
+      # For shell Ctrl-R usability
       enable = true;
       flags = [ "--disable-up-arrow" ]; # Disables the up arrow in atuin
     };
@@ -327,10 +401,6 @@
       enable = true;
       enableZshIntegration = true;
     };
-  };
-
-  home.sessionVariables = {
-    # CROC_SECRET = "SomeSecret";
   };
 
   programs.home-manager.enable = true;
