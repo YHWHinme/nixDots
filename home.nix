@@ -7,20 +7,31 @@
 
   # Adding user packages
   home.packages = [
-    # Normal packages
-    pkgs.eza
-    pkgs.git
+    # Formatter installation
+    pkgs.nixfmt
+    pkgs.ruff
+    pkgs.basedpyright
+    pkgs.lua-language-server
+    pkgs.nixd
+
+    # Development packages
     pkgs.go
+    pkgs.mise
+    pkgs.uv
+    pkgs.deno
+
+    # System use packages
+    pkgs.eza
     pkgs.yazi
     pkgs.croc
-
+    pkgs.git
     pkgs.btop
     pkgs.tldr
     pkgs.fd
     pkgs.bat
     pkgs.ripgrep
 
-		pkgs.lazygit
+    pkgs.lazygit
   ];
 
   programs = {
@@ -33,7 +44,7 @@
 
       enable = true;
       settings = {
-        # nvf plugins and formatters
+        # nvf plugins
         vim = {
 
           # NOTE: Setting core vim opperations
@@ -95,6 +106,12 @@
             setupOpts = {
               cmdline.keymap.preset = "default";
               fuzzy.implementation = "prefer_rust";
+              sources.default = [
+                "lsp"
+                "path"
+                "snippets"
+                "buffer"
+              ];
             };
           };
 
@@ -110,11 +127,20 @@
               formatters_by_ft = {
                 nix = [ "nixfmt" ];
                 lua = [ "stylua" ];
+                ts = [ "biomejs" ];
                 python = [ "ruff" ];
               };
             };
           };
           languages = {
+            go = {
+              # Go code support
+              lsp = {
+                enable = true;
+              };
+              treesitter.enable = true;
+              extraDiagnostics.enable = true;
+            };
             lua = {
               # Enabling everything to do with nix
               lsp = {
@@ -124,6 +150,24 @@
               };
               treesitter.enable = true;
               extraDiagnostics.enable = true;
+            };
+            ts = {
+              # Typescript langauge support
+              enable = true;
+              format = {
+                enable = true;
+                type = [ "prettier" ];
+              };
+              lsp = {
+                # Lua langauge support
+                enable = true;
+                servers = [ "denols" ];
+              };
+              treesitter.enable = true;
+              extraDiagnostics = {
+                enable = true;
+                types = [ "eslint_d" ];
+              };
             };
             nix = {
               # Nix langauge support
@@ -136,16 +180,30 @@
               extraDiagnostics.enable = true;
             };
             python = {
-              enable = true;
+              # Nix langauge support
+              lsp = {
+                # Lua langauge support
+                enable = true;
+                servers = [
+                  "basedpyright"
+                  "ruff"
+                ];
+              };
+              treesitter.enable = true;
+              extraDiagnostics.enable = true;
             };
           };
 
           lazy.plugins = {
-            # Setting up neovim plugins
             # Dependency plugins
             "plenary.nvim" = {
               # Dependency for todo-comments and telescope
               package = pkgs.vimPlugins.plenary-nvim;
+            };
+
+            # Setting up neovim actual plugins
+            "neoscroll.nvim" = {
+              package = pkgs.vimPlugins.neoscroll-nvim; # For scrolling smoothly
             };
             "todo-comments.nvim" = {
               # For todo comments
@@ -216,19 +274,21 @@
             };
 
             # NOTE: Non-essential addtions
-						"lazygit.nvim" = { # Adding lazygit package for working inside of neovim
-							package = pkgs.vimPlugins.lazygit-nvim;
-							lazy = true;
-							# setupModule = "lazygit";
-							keys = [
-								{
-									action = "<cmd>LazygGit<CR>";
-									silent = true;
-									key = "<leader>lg";
-									desc = "Open lazygit area";
-								}
-							]
-						}
+            "lazygit.nvim" = {
+              # Adding lazygit package for working inside of neovim
+              package = pkgs.vimPlugins.lazygit-nvim;
+              lazy = true;
+              # setupModule = "lazygit";
+              keys = [
+                {
+                  action = "<cmd>LazyGit<CR>";
+                  mode = "n";
+                  silent = true;
+                  key = "<leader>lg";
+                  desc = "Open lazygit area";
+                }
+              ];
+            };
             "gitsigns.nvim" = {
               # For gitsigns
               package = pkgs.vimPlugins.gitsigns-nvim;
@@ -307,8 +367,11 @@
               enable = true; # For the bottom area of neovim
             };
             indentscope = {
-              # For indenting
+              # For mini indentation
               enable = true;
+              setupOpts = {
+                delay = 50;
+              };
             };
             surround.enable = true; # For surround additions
             ai.enable = true; # For AI surround areas
@@ -377,8 +440,9 @@
       };
       syntaxHighlighting.enable = true;
       initContent = ''
-        # Setting the croc secret
-        export CROC_SECRET="SomeSecret"
+                # Setting the croc secret
+                export CROC_SECRET="SomeSecret"
+        				export PATH="/home/oj2/.deno/bin:$PATH"
       '';
       shellAliases = {
         dir = "eza --color=always --git --long --no-filesize --icons=always --no-user --no-permissions --no-time -lTag --level=3 --git-ignore";
